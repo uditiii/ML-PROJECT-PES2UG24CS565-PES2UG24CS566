@@ -6,3 +6,5 @@ seaborn
 joblib
 wbgapi
 jupyter
+streamlit
+plotly
