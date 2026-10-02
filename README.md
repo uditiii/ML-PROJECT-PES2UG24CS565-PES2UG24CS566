@@ -19,6 +19,7 @@ Course: UE24CS352A.
 data/
   raw/                       Kaggle + World Bank downloads (gitignored, see "Data")
   processed/olympics_features.csv   one row per country per Games, 1988-2016
+  processed/tokyo2020_features.csv  the same columns for Tokyo 2020 (second test year)
 models/
   classifier.joblib          Stage 1: scaled LogisticRegression, trained 1988-2008
   regressor_template.joblib  Stage 2: chosen tuned regressor (unfitted settings)
@@ -31,7 +32,12 @@ reports/
   predictions_2016.csv       final-test predictions (two-stage and baseline)
   final_results.csv          2016 RMSE: baseline vs two-stage
   top5_2016.csv              top 5 countries, actual vs predicted
-  figures/                   EDA, classifier, tuning and final-test plots
+  dropped_rows_2020.csv      Tokyo 2020 countries removed in prep, with the reason
+  predictions_2020.csv       Tokyo 2020 predictions (two-stage and baseline)
+  final_results_2020.csv     2020 RMSE: baseline vs two-stage
+  top10_2020.csv             top 10 countries in 2020, actual vs predicted
+  paper_*.csv                supplementary paper experiments (see that section)
+  figures/                   EDA, classifier, tuning, final-test and paper-experiment plots
 src/
   data_prep.py               raw data -> olympics_features.csv
   features.py                FEATURE_COLS, year splits, CSV loader (shared)
@@ -41,6 +47,9 @@ src/
   pipeline.py                TwoStageModel (Stage 1 + Stage 2)
   train_regressor.py         Stage 2: baseline, tuning, model choice on 2012
   evaluate.py                final 2016 test, error breakdown, saves the final model
+  prep_2020.py               Tokyo 2020 raw data -> tokyo2020_features.csv
+  predict_2020.py            second test: same model retrained on 1988-2016, predicts 2020
+  paper_experiments.py       supplementary: the paper's other experiments
 app/app.py                   Streamlit demo
 ```
 
@@ -72,6 +81,11 @@ Put the raw files in `data/raw/`, which is gitignored:
   https://databank.worldbank.org/source/world-development-indicators.
   `data_prep.py` downloads these automatically with the `wbgapi` package and caches them as
   `data/raw/wdi.csv`.
+- Kaggle, "2021 Olympics in Tokyo", for the 2020 test year:
+  https://www.kaggle.com/datasets/arjunprasadsarkhel/2021-olympics-in-tokyo.
+  Unzip it into `data/raw/tokyo2020/`. Only `Medals.xlsx` and `Athletes.xlsx` are used.
+  `prep_2020.py` pulls the 2017–2020 World Bank values itself, into
+  `data/raw/wdi_2017_2020.csv`.
 
 ## Run order
 
@@ -80,6 +94,9 @@ python src/data_prep.py          # -> data/processed/olympics_features.csv
 python src/train_classifier.py   # -> models/classifier.joblib
 python src/train_regressor.py    # -> models/regressor_template.joblib (about 1 min)
 python src/evaluate.py           # -> 2016 results, models/final_two_stage.joblib
+python src/prep_2020.py          # -> data/processed/tokyo2020_features.csv
+python src/predict_2020.py       # -> Tokyo 2020 results
+python src/paper_experiments.py  # optional, supplementary (about 2 min)
 streamlit run app/app.py         # demo
 ```
 
@@ -119,6 +136,34 @@ paper reports 3.25 (baseline) and 2.26 (final) on 2016. We did not reproduce tha
   didn't.
 - **Random forests can't predict beyond the range they saw.** The forest tops out near 106,
   so the USA (121) is under-predicted.
+
+## Tokyo 2020 (second test year)
+
+After the model was chosen (on 2012) and tested (on 2016), we added Tokyo 2020 as a second
+test. The **same** two-stage model and baseline were retrained on 1988–2016 and predicted 2020
+once. Nothing about the model, features or hyperparameters changed after seeing 2020. Results
+are from `reports/final_results_2020.csv`.
+
+| | Baseline (one LinearRegression) | Two-stage (LogReg + RandomForest) | Change |
+|---|---|---|---|
+| RMSE, all countries | 3.43 | 3.01 | 12.3% better |
+| RMSE, top 10 countries | 11.67 | 10.16 | 12.9% better |
+
+- **Data:** 197 of 206 Tokyo countries are kept, holding 98.7% of the 1,080 medals. Dropped
+  rows are in `reports/dropped_rows_2020.csv`; Chinese Taipei (12 medals, no World Bank data)
+  is the largest loss.
+- **Stage 1:** accuracy 0.873, F1 0.854. 93% of the squared error is Stage 2's counts.
+- **Biggest misses:**
+  - ROC/Russia, predicted 54 vs 71 actual. Its 2016 count was cut by the doping ban.
+  - Netherlands, predicted 20 vs 36. It nearly doubled its 2016 medals.
+  - China, predicted 77 vs 88.
+  - Host Japan was close (53 vs 58): its team grew from 335 to 585 athletes *and* its medals
+    rose, so the team-size signal that misled us on Brazil 2016 worked here.
+- **Context:** Tokyo 2020 was postponed to 2021 and held under COVID restrictions with no
+  spectators. Its GDP features are 2020 World Bank values, which reflect the pandemic dip.
+
+So the two-stage model was better on 2012, slightly worse on 2016 and clearly better on 2020.
+With one result per Games, the sensible conclusion is "usually better, not always".
 
 ## Paper experiments (supplementary)
 
