@@ -1,0 +1,15 @@
+noc  country                    
+AHO  Curacao                                  1988,1992,1996,2000,2004,2008
+COK  Cook Islands                   1988,1992,1996,2000,2004,2008,2012,2016
+EUN  Russia                                                            1992
+FRG  Germany                                                           1988
+GDR  Germany                                                           1988
+IOA  Individual Olympic Athletes                        1992,2000,2012,2016
+ROT  ROT                                                               2016
+SCG  Serbia                                                  1996,2000,2004
+TCH  Czech Republic                                               1988,1992
+TPE  Taiwan                         1988,1992,1996,2000,2004,2008,2012,2016
+URS  Russia                                                            1988
+YAR  Yemen                                                             1988
+YMD  Yemen                                                             1988
+YUG  Serbia                                                            1988

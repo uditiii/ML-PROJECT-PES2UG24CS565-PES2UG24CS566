@@ -110,7 +110,7 @@ def main():
     (ROOT / "models" / "classifier_info.json").write_text(json.dumps(
         {"model": winner, "features": FEATURE_COLS, "trained_on": list(TRAIN_YEARS),
          "validated_on": VAL_YEAR}, indent=2))
-    print(f"\nWINNER: {winner}  -> models/classifier.joblib  (tell Uditi!)")
+    print(f"\nWINNER: {winner}  -> models/classifier.joblib")
 
 
 if __name__ == "__main__":
