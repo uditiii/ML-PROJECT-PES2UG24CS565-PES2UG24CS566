@@ -25,11 +25,14 @@ import warnings
 warnings.filterwarnings("ignore", message="Unknown solver options: iprint")
 os.environ["PYTHONWARNINGS"] = "ignore:Unknown solver options"
 
+import json
+
 import joblib
 import numpy as np
 import pandas as pd
-from sklearn.base import clone
+from sklearn.base import BaseEstimator, RegressorMixin, clone
 from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import Pipeline
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from sklearn.model_selection import BaseCrossValidator, KFold, StratifiedKFold
 from sklearn.model_selection._search import BaseSearchCV
@@ -39,6 +42,8 @@ from features import FEATURE_COLS, ROOT, TEST_YEAR, TRAIN_YEARS, VAL_YEAR, load_
 from metrics import rmse_all, rmse_top10, selection_score
 from pipeline import TwoStageModel
 from train_classifier import build_models as build_classifiers
+from train_regressor import build_models as build_regressors
+from train_regressor import build_searches, two_stage_scores
 
 SEED = 42
 REPORTS = ROOT / "reports"
@@ -118,6 +123,47 @@ def best_of(search_or_model):
     return clone(search_or_model)
 
 
+def tuned_regressor(name):
+    """A Stage 2 regressor with the hyperparameters train_regressor.py already chose
+    (read from reports/regressor_results.csv), so we never re-tune what was tuned."""
+    res = pd.read_csv(REPORTS / "regressor_results.csv").set_index("model")
+    params = json.loads(res.loc[name, "best_params"])
+    model = build_regressors()[name]
+    prefix = "" if name == "RandomForest" else "model__"   # Pipelines name the step "model"
+    return model.set_params(**{prefix + k: v for k, v in params.items()})
+
+
+class TargetWeightedRegressor(BaseEstimator, RegressorMixin):
+    """Paper Eq. 4: fit `base` with sample weights w_i = exp(-(y_i - y0)^2 / (2 tau^2)).
+
+    y_i is each training country's medal count, so countries whose count is close to
+    y0 get weight ~1 and the rest fade towards 0. tau sets how fast they fade: with
+    tau=1, a country 3 medals away from y0 already gets weight exp(-4.5) ~ 0.01.
+    Written as a tiny sklearn estimator so clone() and TwoStageModel work with it.
+    """
+
+    def __init__(self, base=None, y0=50.0, tau=1.0):
+        self.base, self.y0, self.tau = base, y0, tau
+
+    def fit(self, X, y):
+        y = np.asarray(y, dtype=float)
+        w = np.exp(-(y - self.y0) ** 2 / (2 * self.tau ** 2))
+        if w.max() == 0:   # every weight underflowed: nothing left to fit
+            raise ValueError(f"all weights are 0 for y0={self.y0}, tau={self.tau}")
+        # Effective sample size (Kish): how many equally weighted rows these weights
+        # are "worth". Shows how much of the training data the fit really uses.
+        self.n_eff_ = w.sum() ** 2 / (w ** 2).sum()
+        self.est_ = clone(self.base)
+        if isinstance(self.est_, Pipeline):   # weights go to the model step, not the scaler
+            self.est_.fit(X, y, model__sample_weight=w)
+        else:
+            self.est_.fit(X, y, sample_weight=w)
+        return self
+
+    def predict(self, X):
+        return self.est_.predict(X)
+
+
 # ---------------------------------------------------------------- reference rows
 def reference_rows():
     print("\nREFERENCE: our baseline and our chosen model")
@@ -170,9 +216,45 @@ def exp1_classifiers():
     return tuned
 
 
+# ---------------------------------------------------------------- experiment 2
+def exp2_lwlr():
+    """Paper Eq. 4: locally weighted LinearRegression / Ridge / Lasso as Stage 2.
+    (a) the paper's setting y0=50, tau=1; (b) a small grid, best picked on 2012."""
+    print("\nEXPERIMENT 2: locally weighted regression (paper Eq. 4)")
+    grid_rows = []
+    for name in ["LinearRegression", "Ridge", "Lasso"]:
+        base = tuned_regressor(name)   # Ridge/Lasso keep their tuned alpha
+        n_eff = TargetWeightedRegressor(base, 50, 1).fit(
+            WINNERS[FEATURE_COLS], WINNERS["medals"]).n_eff_
+        two_stage("2: LWLR", f"{name}, paper setting (y0=50, tau=1)",
+                  CLF, TargetWeightedRegressor(base, 50, 1),
+                  notes=f"effective training rows {n_eff:.1f} of {len(WINNERS)}")
+
+        # Grid: score every (y0, tau) on 2012 only; the best one also gets a 2016 score.
+        for y0 in [10, 25, 50, 75]:
+            for tau in [1, 5, 10, 25]:
+                reg = TargetWeightedRegressor(base, y0, tau)
+                try:
+                    a, t, s = two_stage_scores(CLF, reg, TRAIN, VAL)
+                    n_eff = clone(reg).fit(WINNERS[FEATURE_COLS], WINNERS["medals"]).n_eff_
+                except ValueError as e:   # all weights underflowed to 0
+                    a = t = s = n_eff = np.nan
+                    print(f"  {name} y0={y0} tau={tau}: {e}")
+                grid_rows.append({"model": name, "y0": y0, "tau": tau, "rmse_all_2012": a,
+                                  "rmse_top10_2012": t, "selection_score_2012": s,
+                                  "effective_rows": n_eff})
+        grid = pd.DataFrame(grid_rows)
+        best = grid[grid["model"] == name].sort_values("selection_score_2012").iloc[0]
+        two_stage("2: LWLR", f"{name}, grid best on 2012 (y0={best.y0:.0f}, tau={best.tau:.0f})",
+                  CLF, TargetWeightedRegressor(base, best.y0, best.tau),
+                  notes=f"best of 16 (y0, tau) on 2012; effective rows {best.effective_rows:.0f}")
+    pd.DataFrame(grid_rows).to_csv(REPORTS / "paper_lwlr_grid.csv", index=False)
+
+
 def main():
     reference_rows()
     exp1_classifiers()
+    exp2_lwlr()
 
     res = pd.DataFrame(ROWS)
     res.to_csv(REPORTS / "paper_experiments.csv", index=False)
