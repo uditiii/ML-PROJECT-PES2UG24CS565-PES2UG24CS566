@@ -46,9 +46,25 @@ NOC_TO_ISO3 = {
     "SUI": "CHE", "TAN": "TZA", "TGA": "TON", "TOG": "TGO", "UAE": "ARE",
     "URU": "URY", "VAN": "VUT", "VIE": "VNM", "VIN": "VCT", "ZAM": "ZMB",
     "ZIM": "ZWE",
+    # Serbia and Montenegro 1996-2004: World Bank has no SCG series, so use SRB.
+    # Note SRB figures cover Serbia only (no Montenegro), so they understate a bit.
+    "SCG": "SRB",
 }
-# Deliberately dropped (no World Bank series): URS, EUN, GDR, FRG, TCH, YUG, SCG,
+# Deliberately dropped (no World Bank series): URS, EUN, GDR, FRG, TCH, YUG,
 # TPE, AHO, COK, IOA, EOR, ROT, etc. They simply won't match and get reported.
+
+# medals_last_games when the NOC code changed between Games: (successor, year) ->
+# predecessor NOCs whose medals at the previous Games are summed. Used ONLY for
+# medals_last_games. Known limitation: other ex-Soviet / ex-Yugoslav successors and
+# SVK stay at 0, because the Kaggle data doesn't record which republic Unified Team
+# (or Czechoslovak / Yugoslav) athletes came from, so their medals can't be split.
+PREDECESSORS = {
+    ("GER", 1992): ["FRG", "GDR"],
+    ("EUN", 1992): ["URS"],
+    ("RUS", 1996): ["EUN"],
+    ("CZE", 1996): ["TCH"],
+    ("SRB", 2008): ["SCG"],
+}
 
 
 def load_olympics() -> pd.DataFrame:
@@ -76,6 +92,14 @@ def build_olympic_table(ev: pd.DataFrame) -> pd.DataFrame:
     prev = (grid.shift(1, axis=1).reset_index()
                 .melt(id_vars="NOC", var_name="Year", value_name="medals_last_games"))
     df = df.merge(prev, on=["NOC", "Year"], how="left")
+
+    # NOC code changed since last Games: take the predecessors' medals instead of 0
+    print("medals_last_games from predecessors:")
+    for (noc, year), preds in PREDECESSORS.items():
+        prev_year = grid.columns[grid.columns.get_loc(year) - 1]
+        prev_medals = grid.loc[preds, prev_year]
+        df.loc[(df["NOC"] == noc) & (df["Year"] == year), "medals_last_games"] = prev_medals.sum()
+        print(f"  {noc} {year} <- {prev_medals.to_dict()} ({prev_year}) = {prev_medals.sum():.0f}")
     df["medals_last_games"] = df["medals_last_games"].fillna(0).astype(int)
 
     return df[(df["Year"] >= FIRST_YEAR) & (df["Year"] <= LAST_YEAR)].copy()
