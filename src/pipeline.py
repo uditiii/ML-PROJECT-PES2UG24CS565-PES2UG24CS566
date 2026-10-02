@@ -22,8 +22,13 @@ class TwoStageModel:
         self.clf = clf
         self.reg = reg
 
-    def fit(self, df):
-        """Train both stages on the rows in `df` (e.g. all 1988-2008 rows)."""
+    def fit(self, df, refit_clf=True):
+        """Train both stages on the rows in `df` (e.g. all 1988-2008 rows).
+
+        refit_clf=False means `clf` is ALREADY trained (e.g. the saved Stage 1
+        classifier, trained on 1988-2008) and is used exactly as-is; only Stage 2
+        is trained here.
+        """
         X = df[FEATURE_COLS]
 
         # clone() makes a fresh, UNFITTED copy with the same settings. Without it,
@@ -31,11 +36,13 @@ class TwoStageModel:
         # because we reuse the same template many times (for 2012, then again for
         # 2016) and because the saved classifier is already trained. Fitting it
         # in place would silently overwrite the 1988-2008 version with a new one.
-        self.clf_ = clone(self.clf)
         self.reg_ = clone(self.reg)
-
-        # Stage 1 learns from ALL countries: winners (1) and non-winners (0).
-        self.clf_.fit(X, df["won_medal"])
+        if refit_clf:
+            # Stage 1 learns from ALL countries: winners (1) and non-winners (0).
+            self.clf_ = clone(self.clf)
+            self.clf_.fit(X, df["won_medal"])
+        else:
+            self.clf_ = self.clf   # already trained: use it untouched
 
         # Stage 2 learns ONLY from countries that won at least one medal, so the
         # zeros don't drag its predictions down. It answers "given that you win
