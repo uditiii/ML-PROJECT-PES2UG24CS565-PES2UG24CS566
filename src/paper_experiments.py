@@ -364,6 +364,49 @@ def exp6_paper_pipeline():
     print(table.to_string(index=False))
 
 
+def make_chart(res):
+    """RMSE_all on 2012 and 2016 for every row, grouped horizontal bars.
+    Baseline and chosen model are highlighted with a shaded band and bold labels.
+    A few variants are 4-10x worse than the rest, so the axis is capped and their
+    true value is written next to the clipped bar."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    cap = 6.0
+    labels = [f"[{e.split(':')[0]}] {v}" if e != "reference" else v
+              for e, v in zip(res["experiment"], res["variant"])]
+    y = np.arange(len(res))[::-1]   # first row at the top
+    h = 0.38
+    fig, ax = plt.subplots(figsize=(12, 0.42 * len(res) + 1.6))
+    highlight = res["experiment"].eq("reference").to_numpy()
+    for yi, hi in zip(y, highlight):
+        if hi:
+            ax.axhspan(yi - 0.5, yi + 0.5, color="#ecebe6", zorder=0)
+    for col, off, color, name in [("rmse_all_2012", h / 2, "#2a78d6", "2012 (validation)"),
+                                  ("rmse_all_2016", -h / 2, "#eb6834", "2016 (test)")]:
+        vals = res[col].to_numpy()
+        ax.barh(y + off, np.minimum(vals, cap), h, color=color, label=name,
+                edgecolor="white", linewidth=1, zorder=2)
+        for yi, v in zip(y, vals):
+            txt = f"{v:.2f}" + ("  (axis capped)" if v > cap else "")
+            ax.text(min(v, cap) + 0.05, yi + off, txt, va="center", fontsize=7.5,
+                    color="#52514e", zorder=3)
+    ax.set_yticks(y, labels, fontsize=8.5)
+    for tick, hi in zip(ax.get_yticklabels(), highlight):
+        tick.set_fontweight("bold" if hi else "normal")
+    ax.set_xlim(0, cap + 1.2)
+    ax.set_xlabel("RMSE, medals (all countries; lower is better)")
+    ax.set_title("Paper experiments: every variant's error on 2012 (validation) and 2016 (test)\n"
+                 "shaded = our baseline and our chosen model", fontsize=11)
+    ax.spines[["top", "right"]].set_visible(False)
+    ax.grid(axis="x", alpha=0.3, zorder=1)
+    ax.legend(frameon=False, loc="lower right")
+    plt.tight_layout()
+    plt.savefig(REPORTS / "figures" / "paper_experiments.png", dpi=150)
+    plt.close()
+
+
 def main():
     reference_rows()
     exp1_classifiers()
@@ -376,6 +419,8 @@ def main():
     res = pd.DataFrame(ROWS)
     res.to_csv(REPORTS / "paper_experiments.csv", index=False)
     print(f"\nSaved {len(res)} rows -> reports/paper_experiments.csv")
+    make_chart(res)
+    print("Saved reports/figures/paper_experiments.png")
 
     # Close the parallel worker processes (n_jobs=-1) before Python exits. Without
     # this, Windows sometimes prints a harmless but alarming "PermissionError" from

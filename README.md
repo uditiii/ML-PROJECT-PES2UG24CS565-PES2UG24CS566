@@ -120,6 +120,44 @@ paper reports 3.25 (baseline) and 2.26 (final) on 2016. We did not reproduce tha
 - **Random forests can't predict beyond the range they saw.** The forest tops out near 106,
   so the USA (121) is under-predicted.
 
+## Paper experiments (supplementary)
+
+`python src/paper_experiments.py` re-runs the paper's other ideas with our data, split and
+metrics. It writes only new files: `reports/paper_experiments.csv`,
+`reports/paper_classifiers.csv` (paper Table 3), `reports/paper_top5_2016.csv` (paper
+Table 4), `reports/paper_lwlr_grid.csv` and `reports/figures/paper_experiments.png`.
+
+RMSE is in medals, for all countries. The selection score is the one we used to pick our model.
+
+| Variant | 2012 RMSE | 2012 selection | 2016 RMSE | 2020 RMSE |
+|---|---|---|---|---|
+| Baseline: one LinearRegression | 3.20 | 36.9 | 3.42 | 3.43 |
+| **Chosen: LogisticRegression + RandomForest** | **2.51** | **22.8** | **3.63** | **3.01** |
+| Paper's pipeline: GaussianNB + Ridge | 3.81 | 34.5 | 4.52 | 4.41 |
+| Locally weighted LinearRegression, paper setting (y0=50, τ=1) | 13.04 | 600.2 | 34.33 | 41.34 |
+| Two-stage LinearRegression + log(athletes) | 3.67 | 53.5 | 3.53 | 3.95 |
+| SVR, sigmoid kernel (tuned) | 9.53 | 518.1 | 9.65 | 11.22 |
+| RandomForest predicting *share* of medals | 2.33 | 16.7 | 3.70 | 2.90 |
+
+**What matched the paper:**
+- **Log feature maps** didn't help: every log variant has a worse 2012 selection score than
+  raw features.
+- **Classifiers:** swapping our Stage 1 for SVC, MLP or RandomForest changes almost nothing.
+
+**What didn't match:**
+- **The paper's final pipeline** (GaussianNB + Ridge) is the weakest of the three on every year
+  (2016: 4.52 vs the paper's 2.26). GaussianNB's recall is only 0.57 on 2012, so it misses many
+  medal winners.
+- **The paper's locally weighted setting** (y0=50, τ=1) leaves an effective 3.2 of 409
+  training rows and fails. The best weighting on our grid is the widest (τ=25), and even that
+  is worse than no weighting at all.
+- **Medal share vs count:** the paper preferred predicting counts, but a RandomForest
+  predicting each country's *share* of medals beat our chosen model on 2012 (selection 16.7 vs
+  22.8) and on 2020.
+  - We still don't switch. Our model was chosen on 2012 before this candidate existed, and
+    we'd now be choosing with knowledge of 2016 and 2020, i.e. on the test set.
+  - It is also worse on 2016 (3.70 vs 3.63).
+
 ## Known limitations
 
 - **Successor states:** ex-Soviet and ex-Yugoslav successor states (other than Russia, Serbia,
