@@ -22,7 +22,8 @@ from features import FEATURE_COLS        # noqa: E402  (import after the path fi
 from metrics import rmse_all, rmse_top10  # noqa: E402
 
 REPORTS = ROOT / "reports"
-YEARS = {2012: "2012 (validation)", 2016: "2016 (final test)"}
+YEARS = {2012: "2012 (validation)", 2016: "2016 (final test)",
+         2020: "Tokyo 2020 (second test, held 2021)"}
 
 st.set_page_config(page_title="Olympic medal predictor", layout="wide")
 
@@ -35,17 +36,20 @@ def load_predictions(year):
         df = pd.read_csv(REPORTS / "predictions_2012.csv")
         # The 2012 baseline wasn't saved per country, only its scores (chosen_model.json).
         df["baseline"] = pd.NA
-    else:
-        df = pd.read_csv(REPORTS / "predictions_2016.csv").rename(
+    else:   # 2016 and 2020 files have the same columns
+        df = pd.read_csv(REPORTS / f"predictions_{year}.csv").rename(
             columns={"predicted_two_stage": "predicted", "predicted_baseline": "baseline"})
-        df["year"] = 2016
+        df["year"] = year
     df["error"] = df["predicted"] - df["actual"]   # + = over-predicted, - = under
     return df
 
 
 @st.cache_data
 def load_features():
-    return pd.read_csv(ROOT / "data" / "processed" / "olympics_features.csv")
+    # 1988-2016 plus the Tokyo 2020 rows (same columns), for the country explorer.
+    proc = ROOT / "data" / "processed"
+    return pd.concat([pd.read_csv(proc / "olympics_features.csv"),
+                      pd.read_csv(proc / "tokyo2020_features.csv")], ignore_index=True)
 
 
 @st.cache_data
@@ -54,8 +58,9 @@ def load_json(name):
 
 
 @st.cache_data
-def load_final_results():
-    return pd.read_csv(REPORTS / "final_results.csv").set_index("metric")
+def load_final_results(year):
+    name = "final_results.csv" if year == 2016 else f"final_results_{year}.csv"
+    return pd.read_csv(REPORTS / name).set_index("metric")
 
 
 @st.cache_resource   # resource = an object we call methods on (not plain data)
@@ -66,7 +71,6 @@ def load_final_model():
 
 feats = load_features()
 chosen = load_json("chosen_model.json")
-final_res = load_final_results()
 
 # ---------- 1. header ----------
 st.title("Predicting Olympic medal counts from economics & demographics")
@@ -81,10 +85,11 @@ year = st.radio("Games", list(YEARS), format_func=YEARS.get, horizontal=True)
 pred = load_predictions(year)
 scored = pred.rename(columns={"actual": "medals"})   # metrics expect a `medals` column
 
-if year == 2016:
-    base_all, base_top = final_res.loc["rmse_all", "baseline"], final_res.loc["rmse_top10", "baseline"]
-else:
+if year == 2012:
     base_all, base_top = chosen["baseline_2012"]["rmse_all"], chosen["baseline_2012"]["rmse_top10"]
+else:
+    final_res = load_final_results(year)
+    base_all, base_top = final_res.loc["rmse_all", "baseline"], final_res.loc["rmse_top10", "baseline"]
 r_all, r_top = rmse_all(scored["medals"], scored["predicted"]), rmse_top10(scored, scored["predicted"])
 
 c1, c2, c3, c4 = st.columns(4)
@@ -96,10 +101,15 @@ c2.metric("RMSE, top 10 countries", f"{r_top:.2f} medals", f"{r_top - base_top:+
 c3.metric("Baseline RMSE (one LinearRegression)", f"{base_all:.2f} medals")
 c4.metric("Countries", len(pred))
 st.caption("Baseline = a single LinearRegression on all countries, no classifier. "
-           "Lower RMSE is better. 2012 picked the model; 2016 was predicted once, at the end.")
+           "Lower RMSE is better. 2012 picked the model; 2016 (trained on 1988-2012) and "
+           "Tokyo 2020 (trained on 1988-2016) were each predicted once, with nothing changed "
+           "in between.")
+if year == 2020:
+    st.caption("Tokyo 2020 was held in 2021 under COVID restrictions, without spectators, and "
+               "its GDP features are 2020 values that include the pandemic dip.")
 
 show = pred[["country", "noc", "actual", "predicted", "error", "p_medal"]]
-if year == 2016:
+if year != 2012:
     show = pred[["country", "noc", "actual", "predicted", "baseline", "error", "p_medal"]]
 st.dataframe(
     show.sort_values("actual", ascending=False), hide_index=True, height=320,
@@ -188,7 +198,8 @@ with st.expander("How it works"):
 - **Final prediction:** 0 if Stage 1 says no, otherwise Stage 2's count, rounded and never
   below 0.
 - **Split by year, never random:** tune on 1988–2008, choose models on **2012**, then retrain
-  on 1988–2012 and predict **2016** once as the final test.
+  on 1988–2012 and predict **2016** once as the final test. **Tokyo 2020** is a second test:
+  the same model retrained on 1988–2016, predicted once, nothing changed after seeing it.
 - **Model choice:** lowest `MSE_all + 0.25 × MSE_top10` on 2012, so neither the many small
   countries nor the few big ones dominate.
 """)
