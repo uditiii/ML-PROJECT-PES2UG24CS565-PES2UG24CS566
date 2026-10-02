@@ -66,6 +66,20 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### Quick start (no downloads needed)
+
+The processed data, trained models and all results are committed, so after setup you can
+run the demo straight away:
+
+```bash
+streamlit run app/app.py
+```
+
+The modelling scripts also run without any raw data: `train_regressor.py`, `evaluate.py`,
+`predict_2020.py` and `paper_experiments.py` read only `data/processed/` and `models/`.
+Re-running them reproduces the committed results exactly. Only `data_prep.py`, `eda.py` and
+`prep_2020.py` need the raw downloads below.
+
 `scikit-learn` is pinned to 1.6.1 because the saved models were pickled with it. You may see
 `OptimizeWarning: Unknown solver options: iprint`. That's a harmless mismatch between
 scikit-learn 1.6.1 and newer SciPy, and the scripts hide it.
@@ -90,11 +104,12 @@ Put the raw files in `data/raw/`, which is gitignored:
 ## Run order
 
 ```bash
-python src/data_prep.py          # -> data/processed/olympics_features.csv
+python src/data_prep.py          # -> data/processed/olympics_features.csv (needs raw data)
+python src/eda.py                # -> EDA figures (needs data_prep.py to have run first)
 python src/train_classifier.py   # -> models/classifier.joblib
 python src/train_regressor.py    # -> models/regressor_template.joblib (about 1 min)
 python src/evaluate.py           # -> 2016 results, models/final_two_stage.joblib
-python src/prep_2020.py          # -> data/processed/tokyo2020_features.csv
+python src/prep_2020.py          # -> data/processed/tokyo2020_features.csv (needs raw data)
 python src/predict_2020.py       # -> Tokyo 2020 results
 python src/paper_experiments.py  # optional, supplementary (about 2 min)
 streamlit run app/app.py         # demo
