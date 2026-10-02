@@ -133,6 +133,10 @@ def main():
 
     # ---- merge with World Bank ----
     wdi = load_wdi()
+    # land_area barely changes: fill gaps from the nearest available year of the same
+    # country (ffill then bfill). GDP and population are NOT imputed.
+    wdi = wdi.sort_values(["iso3", "year"])
+    wdi["land_area"] = wdi.groupby("iso3")["land_area"].transform(lambda s: s.ffill().bfill())
     known = set(wdi["iso3"])
     unmatched = df[~df["iso3"].isin(known)]
     print("\nUnmatched NOCs (dropped, no World Bank economy):")
@@ -140,6 +144,8 @@ def main():
                .apply(lambda s: ",".join(map(str, sorted(s)))))
     print(summary.to_string())
     (REPORTS / "dropped_teams.txt").write_text(summary.to_string())
+    # every dropped row (here and at the null step) goes to reports/dropped_rows.csv
+    dropped = [unmatched[["noc", "year", "medals"]].assign(reason="no World Bank match")]
 
     df = df[df["iso3"].isin(known)].merge(wdi, on=["iso3", "year"], how="left")
 
@@ -152,6 +158,13 @@ def main():
     df.to_csv(INTERIM / "merged_with_nulls.csv", index=False)   # for the null heatmap
     print("\nNulls per column before dropping:")
     print(df.isna().sum()[df.isna().sum() > 0].to_string())
+
+    nulls = df.isna()
+    has_null = nulls.any(axis=1)
+    dropped.append(df.loc[has_null, ["noc", "year", "medals"]].assign(
+        reason=nulls[has_null].apply(lambda r: "missing " + ", ".join(r.index[r]), axis=1)))
+    (pd.concat(dropped).sort_values(["year", "noc"])
+       .to_csv(REPORTS / "dropped_rows.csv", index=False))
 
     before = len(df)
     df = df.dropna().copy()
@@ -171,6 +184,9 @@ def main():
 
     print("\nRows per year:\n", df["year"].value_counts().sort_index().to_string())
     print("\nClass balance:\n", df["won_medal"].value_counts().to_string())
+    yearly = df.groupby("year")
+    kept = yearly["medals"].sum() / yearly["total_medals_awarded"].first() * 100
+    print("\nShare of each year's medals kept (%):\n", kept.round(1).to_string())
     print(f"\nSaved {PROC / 'olympics_features.csv'}")
 
 
