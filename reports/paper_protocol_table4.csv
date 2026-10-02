@@ -1,0 +1,7 @@
+noc,actual_2012,paper_prediction,ours_in_sample,paper_pipeline_in_sample,ours_out_of_sample
+USA,103.0,103.0,102.0,110.0,102.0
+CHN,88.0,85.0,83.0,90.0,73.0
+GBR,65.0,52.0,59.0,51.0,52.0
+GER,44.0,44.0,42.0,42.0,40.0
+JPN,38.0,45.0,37.0,36.0,35.0
+MAE (5 countries),,4.6,3.0,5.4,7.2
