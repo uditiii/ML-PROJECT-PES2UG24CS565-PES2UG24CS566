@@ -16,7 +16,7 @@ def main():
     raw = pd.read_csv(ROOT / "data" / "interim" / "merged_with_nulls.csv")
     plt.figure(figsize=(11, 6))
     sns.heatmap(raw.isna(), cbar=False, yticklabels=False)
-    plt.title("Missing values before dropping rows (dark = null)")
+    plt.title("Missing values before dropping rows (light = null)")
     plt.tight_layout(); plt.savefig(FIG / "null_heatmap.png", dpi=150); plt.close()
 
     df = load_data()
