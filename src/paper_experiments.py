@@ -369,6 +369,7 @@ def main():
     exp1_classifiers()
     exp2_lwlr()
     exp3_feature_maps()
+    exp4_sigmoid_svr()
 
     res = pd.DataFrame(ROWS)
     res.to_csv(REPORTS / "paper_experiments.csv", index=False)
