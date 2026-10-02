@@ -1,0 +1,198 @@
+noc,country,year,actual,predicted,p_medal
+AFG,Afghanistan,2012,1,0,0.124
+ALB,Albania,2012,0,0,0.133
+ALG,Algeria,2012,1,2,0.905
+AND,Andorra,2012,0,0,0.074
+ANG,Angola,2012,0,0,0.436
+ANT,Antigua,2012,0,0,0.063
+ARG,Argentina,2012,4,6,1.0
+ARM,Armenia,2012,3,5,0.979
+ARU,Aruba,2012,0,0,0.06
+ASA,American Samoa,2012,0,0,0.088
+AUS,Australia,2012,35,38,1.0
+AUT,Austria,2012,0,4,0.996
+AZE,Azerbaijan,2012,10,6,0.999
+BAH,Bahamas,2012,1,2,0.511
+BAN,Bangladesh,2012,0,0,0.091
+BAR,Barbados,2012,0,0,0.084
+BDI,Burundi,2012,0,0,0.072
+BEL,Belgium,2012,3,5,1.0
+BEN,Benin,2012,0,0,0.07
+BER,Bermuda,2012,0,0,0.037
+BHU,Bhutan,2012,0,0,0.062
+BIH,Bosnia and Herzegovina,2012,0,0,0.117
+BIZ,Belize,2012,0,0,0.061
+BLR,Belarus,2012,12,16,1.0
+BOL,Boliva,2012,0,0,0.08
+BOT,Botswana,2012,1,0,0.076
+BRA,Brazil,2012,17,21,1.0
+BRN,Bahrain,2012,1,0,0.103
+BRU,Brunei,2012,0,0,0.041
+BUL,Bulgaria,2012,2,5,0.998
+BUR,Burkina Faso,2012,0,0,0.068
+CAF,Central African Republic,2012,0,0,0.086
+CAM,Cambodia,2012,0,0,0.08
+CAN,Canada,2012,18,22,1.0
+CAY,Cayman Islands,2012,0,0,0.027
+CGO,Republic of Congo,2012,0,0,0.073
+CHA,Chad,2012,0,0,0.051
+CHI,Chile,2012,0,3,0.768
+CHN,China,2012,88,73,1.0
+CIV,Ivory Coast,2012,0,0,0.098
+CMR,Cameroon,2012,0,1,0.59
+COD,Democratic Republic of the Congo,2012,0,0,0.06
+COL,Colombia,2012,8,4,0.999
+COM,Comoros,2012,0,0,0.066
+CPV,Cape Verde,2012,0,0,0.077
+CRC,Costa Rica,2012,0,0,0.119
+CRO,Croatia,2012,6,6,1.0
+CUB,Cuba,2012,14,14,1.0
+CYP,Cyprus,2012,1,0,0.118
+CZE,Czech Republic,2012,10,6,1.0
+DEN,Denmark,2012,9,7,1.0
+DMA,Dominica,2012,0,0,0.07
+DOM,Dominican Republic,2012,2,2,0.808
+ECU,Ecuador,2012,0,2,0.7
+EGY,Egypt,2012,2,3,0.999
+ESA,El Salvador,2012,0,0,0.124
+ESP,Spain,2012,17,21,1.0
+EST,Estonia,2012,2,3,0.77
+ETH,Ethiopia,2012,7,6,0.994
+FIJ,Fiji,2012,0,0,0.115
+FIN,Finland,2012,3,4,0.993
+FRA,France,2012,35,36,1.0
+FSM,Micronesia,2012,0,0,0.1
+GAB,Gabon,2012,1,0,0.184
+GAM,Gambia,2012,0,0,0.055
+GBR,UK,2012,65,52,1.0
+GBS,Guinea-Bissau,2012,0,0,0.076
+GEO,Georgia,2012,7,5,0.991
+GEQ,Equatorial Guinea,2012,0,0,0.04
+GER,Germany,2012,44,40,1.0
+GHA,Ghana,2012,0,0,0.081
+GRE,Greece,2012,2,6,1.0
+GRN,Grenada,2012,1,0,0.106
+GUA,Guatemala,2012,1,0,0.212
+GUI,Guinea,2012,0,0,0.066
+GUM,Guam,2012,0,0,0.077
+GUY,Guyana,2012,0,0,0.087
+HAI,Haiti,2012,0,0,0.085
+HKG,Hong Kong,2012,1,2,0.655
+HON,Honduras,2012,0,0,0.281
+HUN,Hungary,2012,18,11,1.0
+INA,Indonesia,2012,2,5,0.994
+IND,India,2012,6,9,1.0
+IRI,Iran,2012,12,4,0.99
+IRL,Ireland,2012,5,4,0.991
+IRQ,Iraq,2012,0,0,0.1
+ISL,Iceland,2012,0,0,0.398
+ISR,Israel,2012,0,2,0.752
+ISV,"Virgin Islands, US",2012,0,0,0.094
+ITA,Italy,2012,28,29,1.0
+JAM,Jamaica,2012,12,7,1.0
+JOR,Jordan,2012,0,0,0.111
+JPN,Japan,2012,38,35,1.0
+KAZ,Kazakhstan,2012,13,8,1.0
+KEN,Kenya,2012,11,10,1.0
+KGZ,Kyrgyzstan,2012,0,0,0.475
+KIR,Kiribati,2012,0,0,0.064
+KOR,South Korea,2012,28,26,1.0
+KSA,Saudi Arabia,2012,1,3,0.513
+KUW,Kuwait,2012,1,0,0.061
+LAO,Laos,2012,0,0,0.063
+LAT,Latvia,2012,2,3,0.956
+LBA,Libya,2012,0,0,0.018
+LBR,Liberia,2012,0,0,0.054
+LCA,Saint Lucia,2012,0,0,0.077
+LES,Lesotho,2012,0,0,0.072
+LIB,Lebanon,2012,0,0,0.106
+LTU,Lithuania,2012,5,5,0.998
+LUX,Luxembourg,2012,0,0,0.028
+MAD,Madagascar,2012,0,0,0.085
+MAR,Morocco,2012,1,3,0.98
+MAS,Malaysia,2012,2,2,0.704
+MAW,Malawi,2012,0,0,0.064
+MDA,Moldova,2012,2,0,0.427
+MDV,Maldives,2012,0,0,0.065
+MEX,Mexico,2012,7,5,1.0
+MGL,Mongolia,2012,5,4,0.916
+MHL,Marshall Islands,2012,0,0,0.093
+MKD,Macedonia,2012,0,0,0.089
+MLI,Mali,2012,0,0,0.087
+MLT,Malta,2012,0,0,0.063
+MNE,Montenegro,2012,1,0,0.47
+MON,Monaco,2012,0,0,0.01
+MOZ,Mozambique,2012,0,0,0.072
+MRI,Mauritius,2012,0,0,0.234
+MTN,Mauritania,2012,0,0,0.056
+MYA,Myanmar,2012,0,0,0.091
+NAM,Namibia,2012,0,0,0.094
+NCA,Nicaragua,2012,0,0,0.081
+NED,Netherlands,2012,20,14,1.0
+NEP,Nepal,2012,0,0,0.086
+NGR,Nigeria,2012,0,5,0.994
+NIG,Niger,2012,0,0,0.064
+NOR,Norway,2012,4,6,1.0
+NRU,Nauru,2012,0,0,0.035
+NZL,New Zealand,2012,13,10,1.0
+OMA,Oman,2012,0,0,0.022
+PAK,Pakistan,2012,0,0,0.312
+PAN,Panama,2012,0,0,0.166
+PAR,Paraguay,2012,0,0,0.11
+PER,Peru,2012,0,0,0.239
+PHI,Philippines,2012,0,0,0.181
+PLE,Palestine,2012,0,0,0.069
+PLW,Palau,2012,0,0,0.089
+PNG,Papua New Guinea,2012,0,0,0.09
+POL,Poland,2012,10,13,1.0
+POR,Portugal,2012,1,4,0.995
+PUR,Puerto Rico,2012,2,0,0.324
+QAT,Qatar,2012,2,0,0.038
+ROU,Romania,2012,9,9,1.0
+RSA,South Africa,2012,6,3,1.0
+RUS,Russia,2012,82,67,1.0
+RWA,Rwanda,2012,0,0,0.077
+SAM,Samoa,2012,0,0,0.113
+SEN,Senegal,2012,0,0,0.373
+SEY,Seychelles,2012,0,0,0.077
+SGP,SGP,2012,2,0,0.43
+SKN,Saint Kitts,2012,0,0,0.071
+SLE,Sierra Leone,2012,0,0,0.051
+SLO,Slovenia,2012,4,5,0.998
+SMR,San Marino,2012,0,0,0.046
+SOL,Solomon Islands,2012,0,0,0.063
+SOM,Somalia,2012,0,0,0.063
+SRB,Serbia,2012,4,6,1.0
+SRI,Sri Lanka,2012,0,0,0.098
+STP,Sao Tome and Principe,2012,0,0,0.062
+SUD,Sudan,2012,0,0,0.255
+SUI,Switzerland,2012,4,6,1.0
+SUR,Suriname,2012,0,0,0.075
+SVK,Slovakia,2012,4,5,0.997
+SWE,Sweden,2012,8,6,1.0
+SWZ,Swaziland,2012,0,0,0.07
+SYR,Syria,2012,0,0,0.24
+TAN,Tanzania,2012,0,0,0.08
+TGA,Tonga,2012,0,0,0.077
+THA,Thailand,2012,3,5,0.985
+TJK,Tajikistan,2012,1,0,0.461
+TKM,Turkmenistan,2012,0,0,0.094
+TLS,Timor-Leste,2012,0,0,0.059
+TOG,Togo,2012,0,0,0.154
+TTO,Trinidad,2012,4,2,0.622
+TUN,Tunisia,2012,3,3,0.989
+TUR,Turkey,2012,5,6,1.0
+TUV,TUV,2012,0,0,0.076
+UAE,United Arab Emirates,2012,0,0,0.34
+UGA,Uganda,2012,1,0,0.146
+UKR,Ukraine,2012,20,23,1.0
+URU,Uruguay,2012,0,0,0.327
+USA,USA,2012,103,102,1.0
+UZB,Uzbekistan,2012,3,5,0.998
+VAN,Vanuatu,2012,0,0,0.077
+VEN,Venezuela,2012,1,3,0.983
+VIE,Vietnam,2012,0,0,0.439
+VIN,Saint Vincent,2012,0,0,0.077
+YEM,Yemen,2012,0,0,0.072
+ZAM,Zambia,2012,0,0,0.077
+ZIM,Zimbabwe,2012,0,4,0.651
