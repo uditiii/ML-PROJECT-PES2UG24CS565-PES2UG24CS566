@@ -370,6 +370,7 @@ def main():
     exp2_lwlr()
     exp3_feature_maps()
     exp4_sigmoid_svr()
+    exp5_share_target()
 
     res = pd.DataFrame(ROWS)
     res.to_csv(REPORTS / "paper_experiments.csv", index=False)
