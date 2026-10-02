@@ -1,0 +1,23 @@
+{
+  "model": "RandomForest",
+  "features": [
+    "year",
+    "gdp",
+    "gdp_per_capita",
+    "gdp_growth",
+    "pct_world_gdp",
+    "population",
+    "pct_world_pop",
+    "pop_growth",
+    "land_area",
+    "athletes",
+    "pct_athletes",
+    "medals_last_games",
+    "total_medals_awarded"
+  ],
+  "trained_on": [
+    1988,
+    2008
+  ],
+  "validated_on": 2012
+}
