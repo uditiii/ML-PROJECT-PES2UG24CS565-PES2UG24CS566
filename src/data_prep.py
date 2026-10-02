@@ -85,7 +85,6 @@ def build_olympic_table(ev: pd.DataFrame) -> pd.DataFrame:
 
     # Yearly totals over ALL countries (before any World Bank dropping)
     df["total_medals_awarded"] = df.groupby("Year")["medals"].transform("sum")
-    df["total_athletes"] = df.groupby("Year")["athletes"].transform("sum")
 
     # medals_last_games on the FULL history, 0 if the country was absent last Games
     grid = df.pivot(index="NOC", columns="Year", values="medals").fillna(0)
@@ -145,11 +144,10 @@ def main():
     df = df[df["iso3"].isin(known)].merge(wdi, on=["iso3", "year"], how="left")
 
     # ---- features ----
-    df["pct_world_gdp"] = df["gdp"] / df.groupby("year")["gdp"].transform("sum") * 100
-    df["pct_world_pop"] = df["population"] / df.groupby("year")["population"].transform("sum") * 100
-    df["pct_athletes"] = df["athletes"] / df["total_athletes"] * 100
     df["won_medal"] = (df["medals"] > 0).astype(int)
-    df = df[CSV_COLS]
+    # pct_* columns are added AFTER every drop (below), so leave them out for now
+    pct_cols = ["pct_world_gdp", "pct_world_pop", "pct_athletes"]
+    df = df[[c for c in CSV_COLS if c not in pct_cols]]
 
     df.to_csv(INTERIM / "merged_with_nulls.csv", index=False)   # for the null heatmap
     print("\nNulls per column before dropping:")
@@ -158,6 +156,14 @@ def main():
     before = len(df)
     df = df.dropna().copy()
     print(f"\nDropped {before - len(df)} rows with nulls ({before} -> {len(df)})")
+
+    # Shares of the countries actually kept, so each year's column sums to 100
+    yearly = df.groupby("year")
+    df["pct_world_gdp"] = df["gdp"] / yearly["gdp"].transform("sum") * 100
+    df["pct_world_pop"] = df["population"] / yearly["population"].transform("sum") * 100
+    df["pct_athletes"] = df["athletes"] / yearly["athletes"].transform("sum") * 100
+    df = df[CSV_COLS]
+    print("\npct column sums per year:\n", df.groupby("year")[pct_cols].sum().round(2).to_string())
 
     int_cols = ["year", "athletes", "medals_last_games", "total_medals_awarded", "medals", "won_medal"]
     df[int_cols] = df[int_cols].astype(int)
