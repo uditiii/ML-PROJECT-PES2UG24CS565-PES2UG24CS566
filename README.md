@@ -187,9 +187,11 @@ RMSE is in medals, for all countries. The selection score is the one we used to 
 **What matched the paper:**
 - **Log feature maps** didn't help: every log variant has a worse 2012 selection score than
   raw features.
-- **Classifiers:** swapping our Stage 1 for SVC, MLP or RandomForest changes almost nothing.
 
 **What didn't match:**
+- **Classifier choice:** the paper's pipeline uses GaussianNB, but on our data GaussianNB is
+  the weakest classifier (2012 F1 0.67 vs 0.83–0.86 for the other four). Swapping our Stage 1
+  for SVC, MLP or RandomForest changes almost nothing.
 - **The paper's final pipeline** (GaussianNB + Ridge) is the weakest of the three on every year
   (2016: 4.52 vs the paper's 2.26). GaussianNB's recall is only 0.57 on 2012, so it misses many
   medal winners.
@@ -203,6 +205,16 @@ RMSE is in medals, for all countries. The selection score is the one we used to 
     we'd now be choosing with knowledge of 2016 and 2020, i.e. on the test set.
   - It is also worse on 2016 (3.70 vs 3.63).
 
+**Every variant that beats our chosen model somewhere** (from `paper_experiments.csv`):
+- **2012 selection score:** the share-target RandomForest (16.7 vs 22.8) and RandomForest +
+  RandomForest (22.75 vs 22.79, effectively a tie).
+- **2016 RMSE:** seven variants. They include our tuned linear SVR (2.72), two-stage Ridge
+  (3.50), two-stage LinearRegression (3.44) and two log variants.
+- **2020 RMSE:** the share-target RandomForest (2.90) and SVC + RandomForest (3.00, a tie).
+- **All seven 2016 winners do worse than our model on 2020** (3.07–3.95 vs 3.01). Rankings on a
+  single Games don't carry over to the next one, which is exactly why we choose on validation
+  and don't switch after seeing a test year.
+
 ## Known limitations
 
 - **Successor states:** ex-Soviet and ex-Yugoslav successor states (other than Russia, Serbia,
@@ -214,8 +226,9 @@ RMSE is in medals, for all countries. The selection score is the one we used to 
   because the USSR, both Germanys and the Unified Team have no World Bank data.
 - **1988's `medals_last_games`** comes from the boycotted 1984 Games.
 - **One validation year:** models are chosen on 2012 alone, which is a noisy signal.
-  Rankings on 2012 and 2016 differ a lot.
-- **No host-country feature:** host nations' inflated team sizes mislead the model (Brazil 2016).
+  Rankings differ a lot between 2012, 2016 and 2020; the 2020 result reverses 2016's.
+- **No host-country feature:** a host's inflated team size can mislead the model. Brazil 2016
+  got a bigger team but few extra medals (a big miss); Japan 2020 got both (a close prediction).
 - **Shuffled tuning folds:** tuning uses shuffled 5-fold cross-validation, so tuning folds mix
   years. Reported numbers come only from the year-based 2012 and 2016 splits.
 - **Gap to the paper:** we did not reproduce the paper's 2016 result. The data sources and
