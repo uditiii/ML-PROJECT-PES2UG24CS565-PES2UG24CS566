@@ -32,7 +32,9 @@ import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, RegressorMixin, clone
 from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import FunctionTransformer, StandardScaler
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from sklearn.model_selection import BaseCrossValidator, KFold, StratifiedKFold
 from sklearn.model_selection._search import BaseSearchCV
@@ -164,6 +166,46 @@ class TargetWeightedRegressor(BaseEstimator, RegressorMixin):
         return self.est_.predict(X)
 
 
+class ShareTargetRegressor(BaseEstimator, RegressorMixin):
+    """Experiment 5: learn each country's SHARE of the medals, not its count.
+
+    fit:     target = medals / total_medals_awarded (e.g. USA 2008: 110/957 = 0.115)
+    predict: predicted share * that year's total_medals_awarded -> a medal count
+    The total is one of the features, so it's available at prediction time.
+    TwoStageModel then rounds and clips the count exactly as for every other model.
+    """
+
+    def __init__(self, base=None):
+        self.base = base
+
+    def fit(self, X, y):
+        self.est_ = clone(self.base).fit(X, np.asarray(y) / X["total_medals_awarded"].to_numpy())
+        return self
+
+    def predict(self, X):
+        return self.est_.predict(X) * X["total_medals_awarded"].to_numpy()
+
+
+# Experiment 3 feature maps. Plain module-level functions so the models can be
+# cloned and pickled. Each returns a COPY with some columns replaced by their log.
+def log_athletes(X):
+    X = X.copy()
+    X["athletes"] = np.log(X["athletes"])           # athletes >= 1, so log is defined
+    return X
+
+
+def log_athletes_gdp_pop(X):
+    X = log_athletes(X)
+    X["gdp"] = np.log(X["gdp"])                     # gdp and population are > 0
+    X["population"] = np.log(X["population"])
+    return X
+
+
+def with_map(func, model):
+    """Apply a feature map in front of a model (inside a Pipeline, so it's part of fit)."""
+    return Pipeline([("logmap", FunctionTransformer(func)), ("model", model)])
+
+
 # ---------------------------------------------------------------- reference rows
 def reference_rows():
     print("\nREFERENCE: our baseline and our chosen model")
@@ -251,14 +293,92 @@ def exp2_lwlr():
     pd.DataFrame(grid_rows).to_csv(REPORTS / "paper_lwlr_grid.csv", index=False)
 
 
+# ---------------------------------------------------------------- experiment 3
+def exp3_feature_maps():
+    """Log feature maps for the baseline and the two-stage LinearRegression.
+    log() turns multiplicative gaps (GDP 1000x bigger) into additive ones, which is
+    what a linear model can represent. The paper reports this didn't help."""
+    print("\nEXPERIMENT 3: log feature maps")
+    lin2 = tuned_regressor("LinearRegression")   # scaled LinearRegression (Stage 2)
+    two_stage("3: feature maps", "Two-stage LinearRegression, raw features", CLF, lin2,
+              notes="comparison point for the log variants")
+    for label, func in [("log(athletes)", log_athletes),
+                        ("log(athletes, gdp, population)", log_athletes_gdp_pop)]:
+        baseline("3: feature maps", f"Baseline + {label}",
+                 reg=with_map(func, LinearRegression()))
+        two_stage("3: feature maps", f"Two-stage LinearRegression + {label}", CLF,
+                  with_map(func, clone(lin2)), notes="log applied to Stage 2 only; Stage 1 unchanged")
+
+
+# ---------------------------------------------------------------- experiment 4
+def exp4_sigmoid_svr():
+    """SVR with a sigmoid kernel, tuned like the other SVR kernels (same C, gamma,
+    epsilon values, same 5-fold CV on the 1988-2008 winners)."""
+    print("\nEXPERIMENT 4: SVR with a sigmoid kernel")
+    search = GridSearchCV(build_regressors()["SVR"], {
+        "model__kernel": ["sigmoid"], "model__C": [0.1, 1, 10, 100],
+        "model__gamma": ["scale", "auto"], "model__epsilon": [0.1, 0.5, 1],
+    }, cv=KFOLD, scoring="neg_mean_squared_error", n_jobs=-1)
+    search.fit(WINNERS[FEATURE_COLS], WINNERS["medals"])
+    params = {k.replace("model__", ""): v for k, v in search.best_params_.items()}
+    print(f"  best params: {params}  CV RMSE={np.sqrt(-search.best_score_):.3f}")
+    two_stage("4: sigmoid SVR", "SVR sigmoid kernel (tuned)", CLF, best_of(search),
+              notes=f"best params {params}")
+    two_stage("4: sigmoid SVR", "SVR, our kernels (tuned best: linear)", CLF,
+              tuned_regressor("SVR"), notes="from train_regressor.py, for comparison")
+
+
+# ---------------------------------------------------------------- experiment 5
+def exp5_share_target():
+    """Stage 2 learns the SHARE of medals won, then multiplies back by the year's total.
+    Tuned with the same searches as train_regressor.py, but on the share target."""
+    print("\nEXPERIMENT 5: share-of-medals target")
+    searches = build_searches(build_regressors(), KFOLD)
+    share = WINNERS["medals"] / WINNERS["total_medals_awarded"]
+    for name in ["RandomForest", "Ridge"]:
+        search = searches[name].fit(WINNERS[FEATURE_COLS], share)
+        params = {k.replace("model__", ""): v for k, v in search.best_params_.items()}
+        two_stage("5: share target", f"{name}, predicts share of medals (tuned)", CLF,
+                  ShareTargetRegressor(best_of(search)), notes=f"best params {params}")
+    two_stage("5: share target", "Ridge, predicts medal count (our tuned alpha)", CLF,
+              tuned_regressor("Ridge"), notes="comparison point; RandomForest count = CHOSEN row")
+
+
+# ---------------------------------------------------------------- experiment 6
+def exp6_paper_pipeline():
+    """The paper's final pipeline: GaussianNB classifier + Ridge regressor, with Ridge's
+    alpha tuned on 1988-2008 like ours (it IS our tuned Ridge). Plus paper Table 4."""
+    print("\nEXPERIMENT 6: the paper's final pipeline (GaussianNB + Ridge)")
+    gnb = build_classifiers(StratifiedKFold(5, shuffle=True, random_state=SEED))["GaussianNB"]
+    ridge = tuned_regressor("Ridge")
+    two_stage("6: paper pipeline", "PAPER: GaussianNB + Ridge", gnb, ridge,
+              notes=f"Ridge alpha={ridge.get_params()['model__alpha']} (tuned on 1988-2008)")
+
+    # Paper Table 4: top 5 countries in 2016, actual vs predicted (trained on 1988-2012).
+    paper = TwoStageModel(gnb, ridge).fit(FULL_2012).predict(TEST)
+    ours = TwoStageModel(CLF, REG).fit(FULL_2012).predict(TEST)
+    table = pd.DataFrame({"noc": TEST["noc"], "country": TEST["country"], "actual": TEST["medals"],
+                          "paper_gnb_ridge": paper, "ours_logreg_rf": ours}).nlargest(5, "actual")
+    table.to_csv(REPORTS / "paper_top5_2016.csv", index=False)
+    print("  Paper Table 4 (top 5, 2016):")
+    print(table.to_string(index=False))
+
+
 def main():
     reference_rows()
     exp1_classifiers()
     exp2_lwlr()
+    exp3_feature_maps()
 
     res = pd.DataFrame(ROWS)
     res.to_csv(REPORTS / "paper_experiments.csv", index=False)
     print(f"\nSaved {len(res)} rows -> reports/paper_experiments.csv")
+
+    # Close the parallel worker processes (n_jobs=-1) before Python exits. Without
+    # this, Windows sometimes prints a harmless but alarming "PermissionError" from
+    # workers being torn down after all the work is already saved.
+    from joblib.externals.loky import get_reusable_executor
+    get_reusable_executor().shutdown(wait=True)
 
 
 if __name__ == "__main__":
