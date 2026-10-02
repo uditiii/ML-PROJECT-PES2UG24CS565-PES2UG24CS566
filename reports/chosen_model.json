@@ -1,0 +1,19 @@
+{
+  "model": "RandomForest",
+  "params": {
+    "n_estimators": 500,
+    "min_samples_leaf": 1,
+    "max_features": "sqrt",
+    "max_depth": 20
+  },
+  "selected_by": "lowest selection_score (MSE_all + 0.25*MSE_top10) on 2012",
+  "tuned_on": [
+    1988,
+    2008
+  ],
+  "validated_on": 2012,
+  "baseline_2012": {
+    "rmse_all": 3.202156633676589,
+    "rmse_top10": 10.319883720275147
+  }
+}
