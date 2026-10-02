@@ -306,7 +306,7 @@ one-medal difference in one country's count would explain the gap.
 - **No host-country feature:** a host's inflated team size can mislead the model. Brazil 2016
   got a bigger team but few extra medals (a big miss); Japan 2020 got both (a close prediction).
 - **Shuffled tuning folds:** tuning uses shuffled 5-fold cross-validation, so tuning folds mix
-  years. Reported numbers come only from the year-based 2012 and 2016 splits.
+    years. Reported numbers come only from the year-based 2012, 2016 and 2020 splits.
 - **Gap to the paper:** we did not reproduce the paper's 2016 result. The data sources and
   cleaning differ, and we haven't determined which difference matters.
 
