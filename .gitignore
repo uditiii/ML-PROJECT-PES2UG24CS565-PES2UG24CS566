@@ -220,3 +220,6 @@ __marimo__/
 data/raw/
 data/interim/
 .venv/
+
+# local PR notes, not committed
+PR_DESCRIPTION.md
