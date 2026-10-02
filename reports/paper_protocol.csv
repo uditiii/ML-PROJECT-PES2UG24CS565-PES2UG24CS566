@@ -3,10 +3,10 @@ Ours: LogisticRegression + RandomForest,"PAPER PROTOCOL: train 1988-2012, score 
 Ours: LogisticRegression + RandomForest,"Ours: train 1988-2008, score 2012 (validation)",out-of-sample,1988-2008,2012,2.507855677969297,8.12403840463596
 Ours: LogisticRegression + RandomForest,"Ours: train 1988-2012, score 2016 (test)",out-of-sample,1988-2012,2016,3.625907903108877,10.526157893552615
 Ours: LogisticRegression + RandomForest,"Ours: train 1988-2016, score 2020 (second test)",out-of-sample,1988-2016,2020,3.0092918707649106,10.16366075781753
-Paper's pipeline: GaussianNB + Ridge,"PAPER PROTOCOL: train 1988-2012, score 2012",IN-SAMPLE (scored on training data),1988-2012,2012,3.8015492433672606,7.867655305108378
-Paper's pipeline: GaussianNB + Ridge,"Ours: train 1988-2008, score 2012 (validation)",out-of-sample,1988-2008,2012,3.8075532732890305,8.938679992034618
-Paper's pipeline: GaussianNB + Ridge,"Ours: train 1988-2012, score 2016 (test)",out-of-sample,1988-2012,2016,4.515624313886446,9.654014708917737
-Paper's pipeline: GaussianNB + Ridge,"Ours: train 1988-2016, score 2020 (second test)",out-of-sample,1988-2016,2020,4.406962649825196,11.392980294900891
+Paper's pipeline: GaussianNB + Ridge,"PAPER PROTOCOL: train 1988-2012, score 2012",IN-SAMPLE (scored on training data),1988-2012,2012,2.751095766923014,7.867655305108378
+Paper's pipeline: GaussianNB + Ridge,"Ours: train 1988-2008, score 2012 (validation)",out-of-sample,1988-2008,2012,2.9796262498562616,8.938679992034618
+Paper's pipeline: GaussianNB + Ridge,"Ours: train 1988-2012, score 2016 (test)",out-of-sample,1988-2012,2016,3.5056155096534534,9.654014708917737
+Paper's pipeline: GaussianNB + Ridge,"Ours: train 1988-2016, score 2020 (second test)",out-of-sample,1988-2016,2020,3.48819619436111,11.392980294900891
 Baseline: one LinearRegression,"PAPER PROTOCOL: train 1988-2012, score 2012",IN-SAMPLE (scored on training data),1988-2012,2012,2.7904841928340773,8.390470785361213
 Baseline: one LinearRegression,"Ours: train 1988-2008, score 2012 (validation)",out-of-sample,1988-2008,2012,3.202156633676589,10.319883720275147
 Baseline: one LinearRegression,"Ours: train 1988-2012, score 2016 (test)",out-of-sample,1988-2012,2016,3.4198583994196627,9.879271228182775

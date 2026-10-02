@@ -33,6 +33,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator, RegressorMixin, clone
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import GridSearchCV
+from sklearn.naive_bayes import GaussianNB
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer, StandardScaler
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
@@ -123,6 +124,18 @@ def best_of(search_or_model):
     if isinstance(search_or_model, BaseSearchCV):
         return clone(search_or_model.best_estimator_)
     return clone(search_or_model)
+
+
+def scaled_gnb():
+    """GaussianNB with standardised inputs.
+
+    sklearn's GaussianNB adds var_smoothing * (the LARGEST feature variance) to EVERY
+    feature's variance for numerical stability. Unscaled, the largest is GDP's (~8e23),
+    so every feature gets ~8e14 added: features like pct_athletes (variance ~1) become
+    flat and uninformative, and recall on 2012 drops to 0.57 (0.78 scaled). Scaling
+    first gives every feature variance 1, so the smoothing is small for all of them.
+    """
+    return Pipeline([("scale", StandardScaler()), ("model", GaussianNB())])
 
 
 def tuned_regressor(name):
@@ -223,12 +236,16 @@ def reference_rows():
 def exp1_classifiers():
     """Paper Table 3: tune all five classifiers exactly as train_classifier.py does
     (its build_models() grids and its StratifiedKFold), score them on 2012. Then, as
-    an extra, put each one in front of OUR Stage 2 to see what it does to medal error."""
+    an extra, put each one in front of OUR Stage 2 to see what it does to medal error.
+    One difference: GaussianNB gets scaled inputs here (see scaled_gnb), so its row
+    differs from reports/classification_results.csv, where it is unscaled."""
     print("\nEXPERIMENT 1: the five classifiers (paper Table 3)")
     cv = StratifiedKFold(5, shuffle=True, random_state=SEED)   # same as train_classifier.py
     X, y = TRAIN[FEATURE_COLS], TRAIN["won_medal"]
     table, tuned = [], {}
-    for name, est in build_classifiers(cv).items():
+    classifiers = build_classifiers(cv)
+    classifiers["GaussianNB"] = scaled_gnb()   # train_classifier.py's version is unscaled
+    for name, est in classifiers.items():
         est.fit(X, y)
         tuned[name] = best_of(est)
         model = est.best_estimator_ if isinstance(est, BaseSearchCV) else est
@@ -243,18 +260,21 @@ def exp1_classifiers():
     table.to_csv(REPORTS / "paper_classifiers.csv", index=False)
     print(table.drop(columns="best_params").round(3).to_string(index=False))
 
-    # Same code, same data, same seeds -> must reproduce the main classifier results.
+    # Same code, same data, same seeds -> must reproduce the main classifier results
+    # (except GaussianNB, which is scaled here and unscaled there).
     main_res = pd.read_csv(REPORTS / "classification_results.csv").set_index("model")
     for _, r in table.iterrows():
-        assert np.isclose(r["f1"], main_res.loc[r["classifier"], "f1"]), r["classifier"]
-    print("  (matches reports/classification_results.csv exactly)")
+        if r["classifier"] != "GaussianNB":
+            assert np.isclose(r["f1"], main_res.loc[r["classifier"], "f1"]), r["classifier"]
+    print("  (matches reports/classification_results.csv exactly, except the scaled GaussianNB)")
 
     # Extra: each OTHER classifier as Stage 1, with our tuned RandomForest as Stage 2.
     # (LogisticRegression + RandomForest is the CHOSEN reference row already.)
     for name, clf in tuned.items():
         if name != "LogisticRegression":
             two_stage("1: classifier swap", f"{name} + RandomForest", clf, REG,
-                      notes="Stage 1 swapped, Stage 2 = our tuned RandomForest")
+                      notes="Stage 1 swapped, Stage 2 = our tuned RandomForest"
+                            + ("; GaussianNB on scaled inputs" if name == "GaussianNB" else ""))
     return tuned
 
 
@@ -347,12 +367,14 @@ def exp5_share_target():
 # ---------------------------------------------------------------- experiment 6
 def exp6_paper_pipeline():
     """The paper's final pipeline: GaussianNB classifier + Ridge regressor, with Ridge's
-    alpha tuned on 1988-2008 like ours (it IS our tuned Ridge). Plus paper Table 4."""
+    alpha tuned on 1988-2008 like ours (it IS our tuned Ridge). Plus paper Table 4.
+    GaussianNB gets scaled inputs (see scaled_gnb)."""
     print("\nEXPERIMENT 6: the paper's final pipeline (GaussianNB + Ridge)")
-    gnb = build_classifiers(StratifiedKFold(5, shuffle=True, random_state=SEED))["GaussianNB"]
+    gnb = scaled_gnb()
     ridge = tuned_regressor("Ridge")
     two_stage("6: paper pipeline", "PAPER: GaussianNB + Ridge", gnb, ridge,
-              notes=f"Ridge alpha={ridge.get_params()['model__alpha']} (tuned on 1988-2008)")
+              notes=f"GaussianNB on scaled inputs; Ridge alpha="
+                    f"{ridge.get_params()['model__alpha']} (tuned on 1988-2008)")
 
     # Paper Table 4: top 5 countries in 2016, actual vs predicted (trained on 1988-2012).
     paper = TwoStageModel(gnb, ridge).fit(FULL_2012).predict(TEST)

@@ -195,23 +195,30 @@ RMSE is in medals, for all countries. The selection score is the one we used to 
 |---|---|---|---|---|
 | Baseline: one LinearRegression | 3.20 | 36.9 | 3.42 | 3.43 |
 | **Chosen: LogisticRegression + RandomForest** | **2.51** | **22.8** | **3.63** | **3.01** |
-| Paper's pipeline: GaussianNB + Ridge | 3.81 | 34.5 | 4.52 | 4.41 |
+| Paper's pipeline: GaussianNB + Ridge | 2.98 | 28.9 | 3.51 | 3.49 |
 | Locally weighted LinearRegression, paper setting (y0=50, τ=1) | 13.04 | 600.2 | 34.33 | 41.34 |
 | Two-stage LinearRegression + log(athletes) | 3.67 | 53.5 | 3.53 | 3.95 |
 | SVR, sigmoid kernel (tuned) | 9.53 | 518.1 | 9.65 | 11.22 |
 | RandomForest predicting *share* of medals | 2.33 | 16.7 | 3.70 | 2.90 |
 
+GaussianNB is given standardised inputs in these scripts. sklearn adds a smoothing term equal
+to `var_smoothing` × the *largest* feature variance (GDP's, about 8×10²³) to every feature's
+variance, which drowns small-scale features like `pct_athletes` unless the inputs are scaled
+first (2012 recall 0.57 unscaled vs 0.78 scaled).
+
 **What matched the paper:**
 - **Log feature maps** didn't help: every log variant has a worse 2012 selection score than
   raw features.
 
+**Classifier choice:** once its inputs are scaled, GaussianNB is competitive. On 2012 it scores
+F1 0.83, against 0.83–0.86 for the other four. Swapping our Stage 1 for any of them changes the
+medal error very little.
+
 **What didn't match:**
-- **Classifier choice:** the paper's pipeline uses GaussianNB, but on our data GaussianNB is
-  the weakest classifier (2012 F1 0.67 vs 0.83–0.86 for the other four). Swapping our Stage 1
-  for SVC, MLP or RandomForest changes almost nothing.
-- **The paper's final pipeline** (GaussianNB + Ridge) is the weakest of the three on every year
-  (2016: 4.52 vs the paper's 2.26). GaussianNB's recall is only 0.57 on 2012, so it misses many
-  medal winners.
+- **The paper's final pipeline** (GaussianNB + Ridge) scores 2.98 / 3.51 / 3.49 on
+  2012 / 2016 / 2020, far from the paper's reported 2.26 on 2016.
+  - It is worse than our model on 2012 and 2020, but better on 2016 (3.51 vs 3.63).
+  - It beats the baseline on 2012 but not on 2016 or 2020.
 - **The paper's locally weighted setting** (y0=50, τ=1) leaves an effective 3.2 of 409
   training rows and fails. The best weighting on our grid is the widest (τ=25), and even that
   is worse than no weighting at all.
@@ -225,10 +232,11 @@ RMSE is in medals, for all countries. The selection score is the one we used to 
 **Every variant that beats our chosen model somewhere** (from `paper_experiments.csv`):
 - **2012 selection score:** the share-target RandomForest (16.7 vs 22.8) and RandomForest +
   RandomForest (22.75 vs 22.79, effectively a tie).
-- **2016 RMSE:** seven variants. They include our tuned linear SVR (2.72), two-stage Ridge
-  (3.50), two-stage LinearRegression (3.44) and two log variants.
+- **2016 RMSE:** nine variants. They include our tuned linear SVR (2.72), two-stage Ridge
+  (3.50), the paper's GaussianNB + Ridge (3.51), two-stage LinearRegression (3.44), two log
+  variants, and GaussianNB + RandomForest and MLP + RandomForest (both 3.62, ties).
 - **2020 RMSE:** the share-target RandomForest (2.90) and SVC + RandomForest (3.00, a tie).
-- **All seven 2016 winners do worse than our model on 2020** (3.07–3.95 vs 3.01). Rankings on a
+- **All nine 2016 winners do worse than our model on 2020** (3.05–3.95 vs 3.01). Rankings on a
   single Games don't carry over to the next one, which is exactly why we choose on validation
   and don't switch after seeing a test year.
 
@@ -249,7 +257,7 @@ RMSE, all countries, in medals:
 | | **In-sample** (paper protocol: train 1988–2012, score 2012) | Out-of-sample: 2012 (train 1988–2008) | Out-of-sample: 2016 | Out-of-sample: 2020 |
 |---|---|---|---|---|
 | Ours: LogisticRegression + RandomForest | *1.21* | **2.51** | **3.63** | **3.01** |
-| Paper's pipeline: GaussianNB + Ridge | *3.80* | 3.81 | 4.52 | 4.41 |
+| Paper's pipeline: GaussianNB + Ridge | *2.75* | 2.98 | 3.51 | 3.49 |
 | Baseline: one LinearRegression | *2.79* | 3.20 | 3.42 | 3.43 |
 
 The paper's Table 4 countries in 2012. In-sample = trained on 1988–2012, including 2012.
@@ -269,9 +277,14 @@ one-medal difference in one country's count would explain the gap.
 **Why our out-of-sample numbers are the real test:**
 - An in-sample score measures how well a model *remembers* data it was trained on, not how
   well it predicts a Games it hasn't seen.
-- **The flexible model benefits most.** Our random forest's error halves in-sample (2.51 →
-  1.21), because a deep forest can partly memorise its training rows. The simpler GaussianNB +
-  Ridge barely changes (3.81 → 3.80).
+- **The flexible model benefits most.** Scoring 2012 in-sample instead of out-of-sample lowers
+  every model's error, but not equally:
+  - our random forest: 2.51 → 1.21 (52% lower), because a deep forest can partly memorise
+    its training rows;
+  - the baseline: 3.20 → 2.79 (13% lower);
+  - the simpler GaussianNB + Ridge: 2.98 → 2.75 (8% lower).
+- Under the paper's protocol, the paper's pipeline scores 2.75 on our data, closer to its
+  reported 2.26 but still not matching it.
 - In-sample comparisons therefore favour exactly the models most likely to overfit.
 - Under the paper's own protocol, our model's in-sample error (1.21) is far below the paper's
   reported 2.26, but that's not a fair win either.

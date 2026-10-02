@@ -22,12 +22,11 @@ import numpy as np
 import pandas as pd
 from sklearn.base import clone
 from sklearn.linear_model import LinearRegression
-from sklearn.naive_bayes import GaussianNB
 
 from evaluate import round_clip
 from features import FEATURE_COLS, ROOT, load_data
 from metrics import rmse_all, rmse_top10
-from paper_experiments import tuned_regressor
+from paper_experiments import scaled_gnb, tuned_regressor
 from pipeline import TwoStageModel
 
 REPORTS = ROOT / "reports"
@@ -59,7 +58,8 @@ def main():
     # Fresh model objects every time, so no fit ever leaks into another.
     models = {
         "Ours: LogisticRegression + RandomForest": lambda: TwoStageModel(clone(clf), reg),
-        "Paper's pipeline: GaussianNB + Ridge": lambda: TwoStageModel(GaussianNB(),
+        # GaussianNB on scaled inputs: see paper_experiments.scaled_gnb for why.
+        "Paper's pipeline: GaussianNB + Ridge": lambda: TwoStageModel(scaled_gnb(),
                                                                       tuned_regressor("Ridge")),
         "Baseline: one LinearRegression": Baseline,
     }
