@@ -1,0 +1,10 @@
+noc,year,medals,reason
+COK,2020,0,no World Bank match
+ERI,2020,0,"missing gdp, gdp_per_capita, gdp_growth"
+IVB,2020,0,"missing gdp, gdp_per_capita, gdp_growth"
+KOS,2020,2,missing land_area
+LIE,2020,0,missing gdp_growth
+ROT,2020,0,no World Bank match
+SSD,2020,0,"missing gdp, gdp_per_capita, gdp_growth"
+TPE,2020,12,no World Bank match
+YEM,2020,0,"missing gdp, gdp_per_capita, gdp_growth"
