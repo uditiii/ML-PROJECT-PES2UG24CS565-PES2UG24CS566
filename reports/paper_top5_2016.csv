@@ -1,0 +1,6 @@
+noc,country,actual,paper_gnb_ridge,ours_logreg_rf
+USA,USA,121,113,102
+CHN,China,70,91,83
+GBR,UK,67,51,46
+RUS,Russia,56,60,59
+FRA,France,42,38,37

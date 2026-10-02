@@ -371,6 +371,7 @@ def main():
     exp3_feature_maps()
     exp4_sigmoid_svr()
     exp5_share_target()
+    exp6_paper_pipeline()
 
     res = pd.DataFrame(ROWS)
     res.to_csv(REPORTS / "paper_experiments.csv", index=False)
