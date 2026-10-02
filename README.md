@@ -50,6 +50,7 @@ src/
   prep_2020.py               Tokyo 2020 raw data -> tokyo2020_features.csv
   predict_2020.py            second test: same model retrained on 1988-2016, predicts 2020
   paper_experiments.py       supplementary: the paper's other experiments
+  paper_protocol.py          supplementary: in-sample comparison under the paper's protocol
 app/app.py                   Streamlit demo
 ```
 
@@ -112,6 +113,7 @@ python src/evaluate.py           # -> 2016 results, models/final_two_stage.jobli
 python src/prep_2020.py          # -> data/processed/tokyo2020_features.csv (needs raw data)
 python src/predict_2020.py       # -> Tokyo 2020 results
 python src/paper_experiments.py  # optional, supplementary (about 2 min)
+python src/paper_protocol.py     # optional, comparison under the paper's protocol
 streamlit run app/app.py         # demo
 ```
 
@@ -229,6 +231,52 @@ RMSE is in medals, for all countries. The selection score is the one we used to 
 - **All seven 2016 winners do worse than our model on 2020** (3.07–3.95 vs 3.01). Rankings on a
   single Games don't carry over to the next one, which is exactly why we choose on validation
   and don't switch after seeing a test year.
+
+## Comparison under the paper's protocol
+
+**Why the paper's protocol looks in-sample:**
+- The paper's Table 4 "2016 actual" medals are the **2012** results: USA 103, UK 65, GER 44,
+  JPN 38. The real 2016 counts are 121, 67, 42 and 41.
+- The paper also says its final model was trained on 1988–2012.
+- So its reported numbers look like 2012 predictions from a model that had already seen 2012
+  in training. That is **in-sample**: the model is scored on its own training data.
+
+`python src/paper_protocol.py` reproduces that protocol *for comparison only*. It writes
+`reports/paper_protocol.csv` and `reports/paper_protocol_table4.csv`.
+
+RMSE, all countries, in medals:
+
+| | **In-sample** (paper protocol: train 1988–2012, score 2012) | Out-of-sample: 2012 (train 1988–2008) | Out-of-sample: 2016 | Out-of-sample: 2020 |
+|---|---|---|---|---|
+| Ours: LogisticRegression + RandomForest | *1.21* | **2.51** | **3.63** | **3.01** |
+| Paper's pipeline: GaussianNB + Ridge | *3.80* | 3.81 | 4.52 | 4.41 |
+| Baseline: one LinearRegression | *2.79* | 3.20 | 3.42 | 3.43 |
+
+The paper's Table 4 countries in 2012. In-sample = trained on 1988–2012, including 2012.
+
+| | Actual | Paper's prediction | Ours, *in-sample* | Paper pipeline, *in-sample* | Ours, out-of-sample |
+|---|---|---|---|---|---|
+| USA | 103 | 103 | 102 | 110 | 102 |
+| China | 88 | 85 | 83 | 90 | 73 |
+| UK | 65 | 52 | 59 | 51 | 52 |
+| Germany | 44 | 44 | 42 | 42 | 40 |
+| Japan | 38 | 45 | 37 | 36 | 35 |
+| **MAE** | | 4.6 (paper reports 4.8) | *3.0* | *5.4* | 7.2 |
+
+The paper's predictions give MAE 4.6 against our 2012 counts, versus the 4.8 it reports. A
+one-medal difference in one country's count would explain the gap.
+
+**Why our out-of-sample numbers are the real test:**
+- An in-sample score measures how well a model *remembers* data it was trained on, not how
+  well it predicts a Games it hasn't seen.
+- **The flexible model benefits most.** Our random forest's error halves in-sample (2.51 →
+  1.21), because a deep forest can partly memorise its training rows. The simpler GaussianNB +
+  Ridge barely changes (3.81 → 3.80).
+- In-sample comparisons therefore favour exactly the models most likely to overfit.
+- Under the paper's own protocol, our model's in-sample error (1.21) is far below the paper's
+  reported 2.26, but that's not a fair win either.
+- The fair comparison is out-of-sample, every Games scored by a model that never saw it:
+  2.51 (2012), 3.63 (2016) and 3.01 (2020).
 
 ## Known limitations
 
