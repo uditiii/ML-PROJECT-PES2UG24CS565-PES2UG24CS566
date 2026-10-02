@@ -1,5 +1,5 @@
 {
-  "model": "RandomForest",
+  "model": "LogisticRegression",
   "features": [
     "year",
     "gdp",
