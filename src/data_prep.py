@@ -126,6 +126,7 @@ def main():
 
     df = build_olympic_table(load_olympics())
     names = pd.read_csv(RAW / "noc_regions.csv").set_index("NOC")["region"]
+    names["HKG"] = "Hong Kong"   # Kaggle lists HKG under region "China"; it competes separately
     df["country"] = df["NOC"].map(names).fillna(df["NOC"])
     df["iso3"] = df["NOC"].map(lambda n: NOC_TO_ISO3.get(n, n))
     df = df.rename(columns={"Year": "year", "NOC": "noc"})
