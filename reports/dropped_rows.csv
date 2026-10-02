@@ -1,0 +1,93 @@
+noc,year,medals,reason
+AFG,1988,0,"missing gdp, gdp_per_capita, gdp_growth"
+AHO,1988,1,no World Bank match
+ASA,1988,0,"missing gdp, gdp_per_capita, gdp_growth"
+CAY,1988,0,"missing gdp, gdp_per_capita, gdp_growth"
+COK,1988,0,no World Bank match
+DJI,1988,1,missing gdp_growth
+FRG,1988,40,no World Bank match
+GDR,1988,102,no World Bank match
+GUM,1988,0,"missing gdp, gdp_per_capita, gdp_growth"
+ISV,1988,1,"missing gdp, gdp_per_capita, gdp_growth"
+IVB,1988,0,"missing gdp, gdp_per_capita, gdp_growth"
+LIB,1988,0,missing gdp_growth
+MOZ,1988,0,"missing gdp, gdp_per_capita"
+POL,1988,16,"missing gdp, gdp_per_capita, gdp_growth"
+ROU,1988,24,missing gdp_growth
+SMR,1988,0,"missing gdp, gdp_per_capita, gdp_growth"
+TCH,1988,8,no World Bank match
+TPE,1988,0,no World Bank match
+URS,1988,131,no World Bank match
+YAR,1988,0,no World Bank match
+YMD,1988,0,no World Bank match
+YUG,1988,12,no World Bank match
+AHO,1992,0,no World Bank match
+ASA,1992,0,"missing gdp, gdp_per_capita, gdp_growth"
+CAY,1992,0,"missing gdp, gdp_per_capita, gdp_growth"
+COK,1992,0,no World Bank match
+DJI,1992,0,missing gdp_growth
+EST,1992,2,"missing gdp, gdp_per_capita"
+EUN,1992,112,no World Bank match
+GUM,1992,0,"missing gdp, gdp_per_capita, gdp_growth"
+IOA,1992,3,no World Bank match
+ISV,1992,0,"missing gdp, gdp_per_capita, gdp_growth"
+IVB,1992,0,"missing gdp, gdp_per_capita, gdp_growth"
+LAT,1992,3,"missing gdp, gdp_per_capita"
+LTU,1992,2,"missing gdp, gdp_per_capita"
+PRK,1992,9,"missing gdp, gdp_per_capita, gdp_growth"
+SMR,1992,0,"missing gdp, gdp_per_capita, gdp_growth"
+TCH,1992,7,no World Bank match
+TPE,1992,1,no World Bank match
+AFG,1996,0,"missing gdp, gdp_per_capita, gdp_growth"
+AHO,1996,0,no World Bank match
+ASA,1996,0,"missing gdp, gdp_per_capita, gdp_growth"
+CAY,1996,0,"missing gdp, gdp_per_capita, gdp_growth"
+COK,1996,0,no World Bank match
+DJI,1996,0,missing gdp_growth
+GUM,1996,0,"missing gdp, gdp_per_capita, gdp_growth"
+ISV,1996,0,"missing gdp, gdp_per_capita, gdp_growth"
+IVB,1996,0,"missing gdp, gdp_per_capita, gdp_growth"
+PRK,1996,5,"missing gdp, gdp_per_capita, gdp_growth"
+SMR,1996,0,"missing gdp, gdp_per_capita, gdp_growth"
+TPE,1996,1,no World Bank match
+AHO,2000,0,no World Bank match
+ASA,2000,0,"missing gdp, gdp_per_capita, gdp_growth"
+CAY,2000,0,"missing gdp, gdp_per_capita, gdp_growth"
+COK,2000,0,no World Bank match
+DJI,2000,0,missing gdp_growth
+GUM,2000,0,"missing gdp, gdp_per_capita, gdp_growth"
+IOA,2000,0,no World Bank match
+ISV,2000,0,"missing gdp, gdp_per_capita, gdp_growth"
+IVB,2000,0,"missing gdp, gdp_per_capita, gdp_growth"
+PRK,2000,4,"missing gdp, gdp_per_capita, gdp_growth"
+TPE,2000,5,no World Bank match
+AHO,2004,0,no World Bank match
+CAY,2004,0,"missing gdp, gdp_per_capita, gdp_growth"
+COK,2004,0,no World Bank match
+IVB,2004,0,"missing gdp, gdp_per_capita, gdp_growth"
+PRK,2004,5,"missing gdp, gdp_per_capita, gdp_growth"
+TPE,2004,5,no World Bank match
+AHO,2008,0,no World Bank match
+COK,2008,0,no World Bank match
+DJI,2008,0,missing gdp_growth
+IVB,2008,0,"missing gdp, gdp_per_capita, gdp_growth"
+PRK,2008,6,"missing gdp, gdp_per_capita, gdp_growth"
+TPE,2008,4,no World Bank match
+COK,2012,0,no World Bank match
+DJI,2012,0,missing gdp_growth
+ERI,2012,0,"missing gdp, gdp_per_capita, gdp_growth"
+IOA,2012,0,no World Bank match
+IVB,2012,0,"missing gdp, gdp_per_capita, gdp_growth"
+LIE,2012,0,missing gdp_growth
+PRK,2012,6,"missing gdp, gdp_per_capita, gdp_growth"
+TPE,2012,2,no World Bank match
+COK,2016,0,no World Bank match
+ERI,2016,0,"missing gdp, gdp_per_capita, gdp_growth"
+IOA,2016,2,no World Bank match
+IVB,2016,0,"missing gdp, gdp_per_capita, gdp_growth"
+KOS,2016,1,missing land_area
+LIE,2016,0,missing gdp_growth
+PRK,2016,7,"missing gdp, gdp_per_capita, gdp_growth"
+ROT,2016,0,no World Bank match
+SSD,2016,0,"missing gdp, gdp_per_capita, gdp_growth"
+TPE,2016,3,no World Bank match
