@@ -1,0 +1,6 @@
+noc,country,actual,predicted_two_stage,predicted_baseline
+USA,USA,121,102,115
+CHN,China,70,83,93
+GBR,UK,67,46,53
+RUS,Russia,56,59,62
+FRA,France,42,37,39
