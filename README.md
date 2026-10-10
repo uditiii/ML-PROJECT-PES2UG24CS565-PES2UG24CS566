@@ -67,6 +67,9 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+Install from `requirements.txt` (scikit-learn 1.6.1). The saved models were trained with it, and
+the unscaled linear-regression baseline gives different numbers on other scikit-learn versions.
+
 ### Quick start (no downloads needed)
 
 The processed data, trained models and all results are committed, so after setup you can
