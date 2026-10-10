@@ -269,10 +269,12 @@ The paper's Table 4 countries in 2012. In-sample = trained on 1988–2012, inclu
 | UK | 65 | 52 | 59 | 51 | 52 |
 | Germany | 44 | 44 | 42 | 42 | 40 |
 | Japan | 38 | 45 | 37 | 36 | 35 |
-| **MAE** | | 4.6 (paper reports 4.8) | *3.0* | *5.4* | 7.2 |
+| **MAE** | | 4.6 (4.8 using the paper's own actuals) | *3.0* | *5.4* | 7.2 |
 
-The paper's predictions give MAE 4.6 against our 2012 counts, versus the 4.8 it reports. A
-one-medal difference in one country's count would explain the gap.
+The paper does not state an MAE for these five countries; we computed it. Its predictions give
+MAE 4.6 against our 2012 counts, or 4.8 against the actuals printed in its own Table 4. The only
+difference is China: the paper lists 89 medals, our data has 88 (one medal in one country moves
+the five-country average by 0.2).
 
 **Why our out-of-sample numbers are the real test:**
 - An in-sample score measures how well a model *remembers* data it was trained on, not how

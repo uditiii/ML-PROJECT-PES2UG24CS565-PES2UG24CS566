@@ -31,9 +31,11 @@ from pipeline import TwoStageModel
 
 REPORTS = ROOT / "reports"
 
-# The paper's Table 4: its predictions for these five countries, and its reported MAE.
+# The paper's Table 4: its predictions for these five countries. The paper states no MAE;
+# 4.8 is what its predictions score against the actuals printed in the same table
+# (USA 103, China 89, UK 65, Germany 44, Japan 38).
 PAPER_TABLE4 = {"USA": 103, "CHN": 85, "GBR": 52, "GER": 44, "JPN": 45}
-PAPER_MAE = 4.8
+PAPER_TABLE4_MAE = 4.8
 
 
 class Baseline:
@@ -113,8 +115,8 @@ def main():
     t4.to_csv(REPORTS / "paper_protocol_table4.csv", index=False)
     print("\nPaper Table 4 countries, 2012 Games:")
     print(t4.round(2).to_string(index=False))
-    print(f"(paper reports MAE {PAPER_MAE}; with our 2012 actuals its predictions give "
-          f"{mae['paper_prediction']:.1f})")
+    print(f"(MAE of the paper's predictions: {PAPER_TABLE4_MAE} against the actuals in its own "
+          f"Table 4, {mae['paper_prediction']:.1f} against our 2012 actuals)")
 
 
 if __name__ == "__main__":
